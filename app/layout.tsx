@@ -6,7 +6,30 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Meeting Slayer",
-  description: "Meeting Slayer",
+  description:
+    "Meeting Slayer - a fun, Microsoft Teams themed mini-game where you break meetings like bricks, dodge the calendar chaos, and rack up your score.",
+  applicationName: "Meeting Slayer",
+  authors: [{ name: "Pranay Gupta", url: "https://pranaygupta.in" }],
+  creator: "Pranay Gupta",
+  publisher: "Pranay Gupta",
+  keywords: [
+    "Meeting Slayer",
+    "Microsoft Teams",
+    "mini-game",
+    "brick breaker",
+    "web game",
+    "arcade",
+    "calendar chaos",
+  ],
+  themeColor: "#6264A7",
+  colorScheme: "dark",
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
