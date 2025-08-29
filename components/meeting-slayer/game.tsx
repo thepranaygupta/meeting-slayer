@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, startTransition } from "react";
+import type React from "react";
+
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
 // Fluent UI (Teams) icons
@@ -64,6 +66,7 @@ export default function MeetingSlayer() {
   const paddle = useRef({ x: 200, y: 0, w: 120, h: 14, speed: 560 });
   const ball = useRef({ x: 240, y: 300, r: 8, vx: 260, vy: -260 });
   const keys = useRef({ left: false, right: false });
+  const draggingRef = useRef(false);
   const running = started && !gameOver && !win;
 
   const paddleEl = useRef<HTMLDivElement>(null);
@@ -317,8 +320,36 @@ export default function MeetingSlayer() {
 
   const aliveCount = useMemo(() => bricks.filter((b) => b.alive).length, [bricks]);
 
+  function movePaddleTo(clientX: number) {
+    const el = boardRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const desired = clientX - rect.left - paddle.current.w / 2;
+    paddle.current.x = Math.max(0, Math.min(desired, rect.width - paddle.current.w));
+    applyTransforms();
+  }
+
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    draggingRef.current = true;
+    (e.currentTarget as any).setPointerCapture?.(e.pointerId);
+    movePaddleTo(e.clientX);
+    e.preventDefault();
+  }
+
+  function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!draggingRef.current) return;
+    movePaddleTo(e.clientX);
+    e.preventDefault();
+  }
+
+  function onPointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    draggingRef.current = false;
+    (e.currentTarget as any).releasePointerCapture?.(e.pointerId);
+    e.preventDefault();
+  }
+
   return (
-    <div className="flex h-screen" style={{ background: COLORS.bg }}>
+    <div className="flex h-[100dvh] md:h-screen" style={{ background: COLORS.bg }}>
       {/* Sidebar with Fluent UI icons */}
       <aside
         aria-label="Teams sidebar"
@@ -381,7 +412,7 @@ export default function MeetingSlayer() {
 
             <div className="text-sm font-medium">Meetings Slayed: {score}</div>
 
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               {[
                 { label: "Work week" },
                 { label: "Filter" },
@@ -436,8 +467,15 @@ export default function MeetingSlayer() {
             {/* Playable calendar grid */}
             <div
               ref={boardRef}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
               className="relative rounded-md border overflow-hidden h-full flex-1"
               style={{
+                touchAction: "none",
+                userSelect: "none",
+                WebkitUserSelect: "none",
                 background: `repeating-linear-gradient(0deg, ${COLORS.bg}, ${COLORS.bg} 38px, ${COLORS.border} 39px, ${COLORS.bg} 78px),
                              repeating-linear-gradient(90deg, ${COLORS.bg}, ${COLORS.bg} calc(20% - 1px), ${COLORS.border} calc(20% - 1px), ${COLORS.border} 20%)`,
                 borderColor: COLORS.border,
@@ -601,7 +639,7 @@ function useRaf(active: boolean, cb: (dt: number) => void) {
     function loop(ts: number) {
       if (last.current == null) last.current = ts;
       // ball speed
-      const dt = (ts - last.current) / 800;
+      const dt = (ts - last.current) / 900;
       last.current = ts;
       cb(dt);
       rafRef.current = requestAnimationFrame(loop);
