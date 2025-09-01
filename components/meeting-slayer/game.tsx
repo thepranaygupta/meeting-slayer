@@ -438,7 +438,7 @@ export default function MeetingSlayer() {
         {/* Calendar board */}
         <div
           className={cn(
-            "relative mx-auto w-full max-w-[1400px] px-2 md:px-6 py-4 flex-1 min-h-0",
+            "relative mx-auto w-full px-2 md:px-6 py-4 flex-1 min-h-0",
             started && !win && !gameOver ? "" : "backdrop-blur-sm"
           )}>
           <div className="flex h-full gap-2">
